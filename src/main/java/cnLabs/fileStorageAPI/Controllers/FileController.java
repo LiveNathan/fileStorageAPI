@@ -45,4 +45,8 @@ public class FileController {
     // PATCH file by id
 
     // DELETE file by id
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> deleteFileById(@PathVariable Long id) {
+        if (fileService.fileExists(id))
+    }
 }

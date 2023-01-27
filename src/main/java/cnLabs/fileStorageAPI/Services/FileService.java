@@ -42,4 +42,8 @@ public class FileService {
         String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         return DatabaseFile.builder().fileName(filename).fileType(file.getContentType()).size(file.getSize()).data(file.getBytes()).build();
     }
+
+    public boolean fileExists(Long id) {
+        return fileRepository.existsById(id);
+    }
 }
