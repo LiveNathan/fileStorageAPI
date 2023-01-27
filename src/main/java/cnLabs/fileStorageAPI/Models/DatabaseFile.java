@@ -18,7 +18,6 @@ public class DatabaseFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String fileName;
     private String fileType;
     private String downloadUrl;
@@ -27,11 +26,10 @@ public class DatabaseFile {
     @Lob
     private byte[] data;
 
-    public String setDownloadUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/files/")
+    public void setDownloadUrl() {
+        this.downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/file-storage-api/")
                 .path(String.valueOf(this.id))
                 .toUriString();
     }
-
 }
