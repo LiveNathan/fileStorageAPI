@@ -17,7 +17,7 @@ public class FileService {
     @Autowired
     FileRepository fileRepository;
 
-    public DatabaseFile getFile(Long id) {
+    public DatabaseFile getFileById(Long id) {
         if (fileRepository.existsById(id)) {
             return fileRepository.getReferenceById(id);
         } else {
@@ -25,25 +25,56 @@ public class FileService {
         }
     }
 
+    public DatabaseFile getFileByName(String name) {
+        if (fileRepository.existsByFileName(name)) {
+            return fileRepository.findByFileName(name);
+        } else {
+            return null;
+        }
+    }
+
     public URI saveFile(MultipartFile file) throws IOException {  // How will this IOException get handled?
         DatabaseFile savedFile = fileRepository.save(multipart2database(file));  // Save file
-        savedFile.setDownloadUrl();  // Create the download URL using the returned id
-        savedFile = fileRepository.save(savedFile);  // Save again
-        URI uri;
-        try {  // Is this the right way to handle this exception?
-            uri = new URI(savedFile.getDownloadUrl());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        return uri;
+        return createDownloadUrl(savedFile);
+    }
+
+    public URI updateFile(Long id, MultipartFile file) throws IOException {
+        DatabaseFile savedFile = fileRepository.save(DatabaseFile.builder().fileName(cleanFileName(file)).fileType(file.getContentType()).size(file.getSize()).data(file.getBytes()).id(id).build());
+        return createDownloadUrl(savedFile);
+    }
+
+    public URI updateFileName(Long id, String name) {
+        DatabaseFile databaseFile = fileRepository.getReferenceById(id);  // Get the file.
+        databaseFile.setFileName(StringUtils.cleanPath(Objects.requireNonNull(name)));  // Clean and set file name.
+        DatabaseFile savedFile = fileRepository.save(databaseFile);  // Save file with new name.
+        return createDownloadUrl(savedFile);
     }
 
     private DatabaseFile multipart2database(MultipartFile file) throws IOException {  // How will this IOException get handled?
-        String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        return DatabaseFile.builder().fileName(filename).fileType(file.getContentType()).size(file.getSize()).data(file.getBytes()).build();
+        return DatabaseFile.builder().fileName(cleanFileName(file)).fileType(file.getContentType()).size(file.getSize()).data(file.getBytes()).build();
     }
 
     public boolean fileExists(Long id) {
         return fileRepository.existsById(id);
+    }
+
+    public void deleteFile(Long id) {
+        fileRepository.deleteById(id);
+    }
+
+    public String cleanFileName(MultipartFile file) {
+        return StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+    }
+
+    public URI createDownloadUrl(DatabaseFile file) {
+        file.setDownloadUrl();  // Create the download URL using the returned id
+        file = fileRepository.save(file);  // Save again
+        URI uri;
+        try {  // Is this the right way to handle this exception?
+            uri = new URI(file.getDownloadUrl());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        return uri;
     }
 }
