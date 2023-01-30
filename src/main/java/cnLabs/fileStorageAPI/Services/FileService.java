@@ -34,7 +34,7 @@ public class FileService {
     }
 
     public URI saveFile(MultipartFile file) throws IOException {  // How will this IOException get handled?
-        DatabaseFile savedFile = fileRepository.save(multipart2database(file));  // Save file
+        DatabaseFile savedFile = fileRepository.save(multipart2database(file));
         return createDownloadUrl(savedFile);
     }
 
